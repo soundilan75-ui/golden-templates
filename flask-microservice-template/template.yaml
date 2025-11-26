@@ -24,6 +24,12 @@ spec:
           type: string
           title: Description
           description: Short description of the service
+        port: 
+          type: string
+          title: ServerPortExposition
+          enum: ["5000", "8080", "8000"]
+          default: "5000"
+        
 
     - title: Repository Location
       required: [repo]
@@ -38,6 +44,8 @@ spec:
           enum: [public, private]
           default: public
 
+          
+
   steps:
     - id: fetch
       name: Fetch Template Source
@@ -51,6 +59,7 @@ spec:
           destination:
             repo: ${{ parameters.repo }}
             owner: soundilan75-ui
+          port: ${{ parameters.port }}  
 
     - id: wait
       name: Wait for GitHub to index repo
