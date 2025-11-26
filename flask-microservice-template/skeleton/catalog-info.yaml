@@ -4,9 +4,9 @@ metadata:
   name: ${{ values.name }}
   description: ${{ values.description }}
   annotations:
-    github.com/project-slug: soundilan75-ui/${{ values.repo }}
+    github.com/project-slug: ${{ values.destination.owner }}/${{ values.destination.repo }}
+    backstage.io/techdocs-ref: dir:.
 spec:
   type: service
   owner: ${{ values.owner }}
   lifecycle: experimental
-
