@@ -57,16 +57,14 @@ spec:
 
 
 # In prod , we add a condition in prev steps if the github repo already exists or not than creates a PR for every change ... 
-    - id: publish
-      name: Publish PR to GitHub
+    - id: publishPr
+      name: Create PR on existing repo
       action: publish:github:pull-request
       input:
         repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
-
-        branchName: "scaffolder/${{ parameters.project_name }}-${{ now | date('YYYYMMDDHHmmss') }}"
-        title: "Infrastructure Setup for ${{ parameters.project_name }}"
-        description: |
-          This PR contains the Terraform infrastructure scaffolding for ${{ parameters.project_name }}.
+        branchName: "scaffolder-${{ parameters.project_name }}-${{ randomSuffix }}"
+        title: "Infra Update for ${{ parameters.project_name }}"
+        description: "Automatic scaffolder update."
 
           
 
