@@ -15,6 +15,7 @@ spec:
         project_name:
           type: string
           title: Project Name
+          description: Name prefix for all AWS resources
         aws_region:
           type: string
           title: AWS Region
@@ -26,10 +27,7 @@ spec:
         s3_bucket_name:
           type: string
           title: S3 Bucket Name
-        instancetype:
-          type: string
-          title: Compute Type
-          description: Size of VM
+          description: Globally unique S3 bucket name
 
   steps:
     - id: fetch
@@ -42,60 +40,37 @@ spec:
           aws_region: ${{ parameters.aws_region }}
           vpc_cidr: ${{ parameters.vpc_cidr }}
           s3_bucket_name: ${{ parameters.s3_bucket_name }}
-          instancetype: ${{ parameters.instancetype }}
+        
 
-    # ----------------------------------------------------
-    # CHECK IF REPO EXISTS USING GITHUB API (BUILT-IN)
-    # ----------------------------------------------------
-    - id: checkRepo
-      name: Check if Repo Exists
-      action: fetch:plain
-      input:
-        method: GET
-        url: https://api.github.com/repos/ramannkhanna2/${{ parameters.project_name }}-infra
-        headers:
-          Authorization: Bearer ${{ secrets.githubToken }}
-
-    # ----------------------------------------------------
-    # CREATE REPO (FIRST RUN ONLY)
-    # ----------------------------------------------------
-    - id: createRepo
-      name: Create GitHub Repository
-      if: ${{ steps.checkRepo.output.statusCode == 404 }}
-      action: github:repo:create
-      input:
-        repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
-        visibility: private
-
-    # ----------------------------------------------------
-    # PUBLISH INITIAL COMMIT (FIRST RUN ONLY)
-    # ----------------------------------------------------
-    - id: publishInitial
-      name: Push Initial Code
-      if: ${{ steps.checkRepo.output.statusCode == 404 }}
+    - id: publishRepo
+      name: Publish to GitHub
       action: publish:github
       input:
         repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
+        repoVisibility: public
 
-    # ----------------------------------------------------
-    # CREATE PR (SUBSEQUENT RUNS)
-    # ----------------------------------------------------
-    - id: publishPr
-      name: Create Pull Request (Repo Exists)
-      if: ${{ steps.checkRepo.output.statusCode == 200 }}
-      action: publish:github:pull-request
+
+# In prod , we add a condition in prev steps if the github repo already exists or not than creates a PR for every change ... 
+    # - id: publishPr
+    #   name: Publish PR to GitHub
+    #   action: publish:github:pull-request
+    #   input:
+    #     repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
+
+    #     branchName: "scaffolder/${{ parameters.project_name }}-${{ now | date('YYYYMMDDHHmmss') }}"
+    #     title: "Infrastructure Setup for ${{ parameters.project_name }}"
+    #     description: |
+    #       This PR contains the Terraform infrastructure scaffolding for ${{ parameters.project_name }}.
+
+          
+
+    - id: register
+      name: Register Infra in Backstage Catalog
+      action: catalog:register
       input:
-        repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
-        branchName: "scaffolder/${{ parameters.project_name }}-${{ now | date('YYYYMMDDHHmmss') }}"
-        title: "Infra Update: ${{ parameters.project_name }}"
-        description: "Automated scaffolder update."
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
 
   output:
     links:
-      - title: GitHub Repository (Initial)
-        if: ${{ steps.checkRepo.output.statusCode == 404 }}
-        url: ${{ steps.publishInitial.output.remoteUrl }}
-
-      - title: GitHub Repository (PR)
-        if: ${{ steps.checkRepo.output.statusCode == 200 }}
-        url: ${{ steps.publishPr.output.remoteUrl }}
+      - title: GitHub Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
