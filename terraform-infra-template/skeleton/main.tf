@@ -19,6 +19,17 @@ resource "aws_vpc" "main" {
   }
 }
 
+
+resource "aws_instance" "example" {
+  ami           = "ami-0ecb62995f68bb549"
+  instance_type = "${{ values.type }}"
+
+  tags = {
+    Name = "raman-HelloWorld-2"
+  }
+
+
+
 resource "aws_s3_bucket" "secure" {
   bucket = "${{ values.s3_bucket_name }}"
 
