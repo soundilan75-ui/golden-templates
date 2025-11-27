@@ -52,50 +52,38 @@ spec:
           instancetype: ${{ parameters.instancetype }}
         
 
-    # - id: publish
-    #   name: Publish to GitHub
-    #   action: publish:github
-    #   input:
-    #     repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
-    #     repoVisibility: public
-    # - id: wait
-    #   name: Wait for GitHub to catch up
-    #   action: debug:wait
-    #   input:
-    #     seconds: 5    
-    # - id: register
-    #   name: Register Infra in Backstage Catalog
-    #   action: catalog:register
-    #   input:
-    #     repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
+        repoVisibility: public
+    - id: wait
+      name: Wait for GitHub to catch up
+      action: debug:wait
+      input:
+        seconds: 5    
+    - id: register
+      name: Register Infra in Backstage Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
 
 
 
     
     
     #In prod , we add a condition in prev steps if the github repo already exists or not than creates a PR for every change ... 
-    - id: publish
-      name: Create PR on existing repo
-      action: publish:github:pull-request
-      input:
-        repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
-        branchName: "scaffolder-${{ parameters.project_name }}-${{ parameters.branchsuffix }}"
-        title: "Infra Update for ${{ parameters.project_name }}"
-        description: "Automatic scaffolder update."
-    - id: wait
-      name: Wait for GitHub to catch up
-      action: debug:wait
-      input:
-        seconds: 5
-    - id: register
-      name: Register Infra in Backstage Catalog
-      action: catalog:register
-      input:
-        location:
-          type: url
-          #target: "https://github.com/ramannkhanna2/${{ parameters.project_name }}-infra/blob/main/catalog-info.yaml"
-          target: https://github.com/ramannkhanna2/raman-order-infra-infra/blob/${{ steps.publish.output.branchName }}/catalog-info.yaml
+    # - id: publish
+    #   name: Create PR on existing repo
+    #   action: publish:github:pull-request
+    #   input:
+    #     repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
+    #     branchName: "scaffolder-${{ parameters.project_name }}-${{ parameters.branchsuffix }}"
+    #     title: "Infra Update for ${{ parameters.project_name }}"
+    #     description: "Automatic scaffolder update."
 
+        
   output:
     links:
       - title: GitHub Repository
