@@ -28,6 +28,10 @@ spec:
           type: string
           title: S3 Bucket Name
           description: Globally unique S3 bucket name
+        instancetype:
+          type: string
+          title: Select the compute requirement ( t2.micro /t3/micro )
+          description : compute of the vm
 
   steps:
     - id: fetch
@@ -40,6 +44,7 @@ spec:
           aws_region: ${{ parameters.aws_region }}
           vpc_cidr: ${{ parameters.vpc_cidr }}
           s3_bucket_name: ${{ parameters.s3_bucket_name }}
+          instancetype: ${{ parameters.instancetype }}
 
     - id: publish
       name: Publish to GitHub
