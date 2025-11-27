@@ -46,19 +46,40 @@ spec:
           s3_bucket_name: ${{ parameters.s3_bucket_name }}
           instancetype: ${{ parameters.instancetype }}
 
-    - id: publish
-      name: Publish to GitHub
-      #action: publish:github
+    - id: checkRepo
+      name: Check if Repo Exists
+      action: github:repo:exists
+      input:
+        owner: ramannkhanna2
+        repo: ${{ parameters.project_name }}-infra
+      
+
+    - id: createRepo
+      name: Create GitHub Repository (only if it doesn't exist)
+      if: ${{ steps.checkRepo.output.exists == false }}
+      action: github:repo:create
+      input:
+        repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
+        description: "Terraform Infra Repo"
+        visibility: private
+
+    - id: publishInitial
+      name: Push initial code (only on first run)
+      if: ${{ steps.checkRepo.output.exists == false }}
+      action: publish:github
+      input:
+        repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra    
+        
+
+    - id: publishPr
+      name: Create PR on existing repo
+      if: ${{ steps.checkRepo.output.exists == true }}
       action: publish:github:pull-request
       input:
         repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
-        repoVisibility: private
-
-    - id: register
-      name: Register Infra in Backstage Catalog
-      action: catalog:register
-      input:
-        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        branchName: "scaffolder/${{ parameters.project_name }}-${{ now | date('YYYYMMDDHHmmss') }}"
+        title: "Infra Update for ${{ parameters.project_name }}"
+        description: "Automatic scaffolder update."
 
   output:
     links:
