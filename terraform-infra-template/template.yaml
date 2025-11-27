@@ -15,7 +15,6 @@ spec:
         project_name:
           type: string
           title: Project Name
-          description: Name prefix for all AWS resources
         aws_region:
           type: string
           title: AWS Region
@@ -27,11 +26,10 @@ spec:
         s3_bucket_name:
           type: string
           title: S3 Bucket Name
-          description: Globally unique S3 bucket name
         instancetype:
           type: string
-          title: Select the compute requirement ( t2.micro /t3/micro )
-          description : compute of the vm
+          title: Select the compute requirement
+          description: compute of the VM
 
   steps:
     - id: fetch
@@ -52,7 +50,6 @@ spec:
       input:
         owner: ramannkhanna2
         repo: ${{ parameters.project_name }}-infra
-      
 
     - id: createRepo
       name: Create GitHub Repository (only if it doesn't exist)
@@ -68,8 +65,7 @@ spec:
       if: ${{ steps.checkRepo.output.exists == false }}
       action: publish:github
       input:
-        repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra    
-        
+        repoUrl: github.com?owner=ramannkhanna2&repo=${{ parameters.project_name }}-infra
 
     - id: publishPr
       name: Create PR on existing repo
@@ -83,5 +79,4 @@ spec:
 
   output:
     links:
-      - title: GitHub Repository
-        url: ${{ steps['publish'].output.remoteUrl }}
+      - title
