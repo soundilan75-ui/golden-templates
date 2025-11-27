@@ -79,4 +79,6 @@ spec:
 
   output:
     links:
-      - title
+      - title: GitHub Repository
+        url: >-
+          ${{ steps.publishInitial.output.remoteUrl || steps.publishPr.output.remoteUrl }}
